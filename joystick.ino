@@ -1,4 +1,7 @@
 //#include <cmath>
+#include <Servo.h>
+
+Servo myservo;
 
 #define joyX A0
 #define joyY A1
@@ -7,12 +10,24 @@
 #define DOWN 11
 #define LEFT 9
 
-int button=2;
+int button = 2;
 int buttonState = 0;
 int buttonState1 = 0;
 
- int xOffset = 340;
- int yOffset = 687;
+int servoPos = 0;
+
+int xOffset = 340;
+int yOffset = 687;
+
+enum STATE {
+  LOCKED,
+  UNLOCKED
+};
+
+STATE lockState = LOCKED;
+
+int dir = -1; // STARTING DIRECTION
+int lastDir = -1; // SAVED DIRECTION
 
 void setup() {
   pinMode(7,OUTPUT);
@@ -23,46 +38,112 @@ void setup() {
   
   pinMode(10,OUTPUT);
 
+  myservo.attach(13);
 
   pinMode(button,INPUT);
-  digitalWrite(button, HIGH);
+
   Serial.begin(9600);
 }
  
 void loop() {
+  if (lockState == LOCKED) {
+      lock();
+  } else {
+    unlock();
+  }
+  
  int xValue = analogRead(joyX);
  int yValue = analogRead(joyY);
 //   Serial.print(xValue);
 //  Serial.print("\t");
 //  Serial.println(yValue);
 
- int dir = getDirection(xValue, yValue);
+ dir = getDirection(xValue, yValue);
+ 
  if (dir != -1) {
   digitalWrite(dir, HIGH);
+  checkState(dir);
  } else {
   digitalWrite(UP, LOW);
   digitalWrite(RIGHT, LOW);
   digitalWrite(DOWN, LOW);
   digitalWrite(LEFT, LOW);
  }
- Serial.print(dir);
  delay(100);
  dir = -1;
-//
-  
-//  buttonState = digitalRead(button);
-//  Serial.println(buttonState);
-  
 
+  buttonState = digitalRead(button);
 
-//  if (buttonState == LOW)
-//  {
-//    Serial.println("Switch = High");
-//    digitalWrite(7, HIGH);
-//  }
-//  else{digitalWrite(7, LOW);}
-//  buttonState1 = digitalRead(7);
+  if (buttonState == HIGH)
+  {
+    Serial.println("Switch = High");
+    lock();
+  }
+  
   delay(100);
+}
+
+void lock() {
+  myservo.write(90);
+}
+
+void unlock() {
+  myservo.write(0);
+  delay(3000);
+}
+
+void checkState(int dir) {
+  // UNLOCK PATTERN
+  constexpr int pattern [4] = { UP, DOWN, LEFT, RIGHT };
+  int TERMINATING_DIR = pattern[3];
+
+  if (lastDir != dir) {
+      switch(dir) {
+      case pattern[0]:
+        if (lastDir != -1) {
+          reset();
+        } else {
+          lastDir = pattern[0];
+        }
+        break;
+      case pattern[1]:
+        if (lastDir != pattern[0]) {
+          reset();
+        } else {
+          lastDir = pattern[1];
+        }
+        break;
+      case pattern[2]:
+        if (lastDir != pattern[1]) {
+          reset();
+        } else {
+          lastDir = pattern[2];
+        }
+        break;
+      case pattern[3]:
+        if (lastDir != pattern[2]) {
+          reset();
+        } else {
+          lastDir = pattern[3];
+        }
+        break;
+      default:
+        reset();
+    }
+  }
+
+
+  Serial.print(lastDir);
+
+  if (lastDir == TERMINATING_DIR) {
+    unlock();
+    reset();
+  }
+}
+
+void reset() {
+  Serial.print("resetting");
+  lastDir = -1;
 }
 
 int getDirection(int xValue, int yValue) {
