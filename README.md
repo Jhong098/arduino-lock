@@ -6,4 +6,4 @@ Input a joystick directional combination to unlock the box, which is locked by a
 
 
 ## Demo
-![Demo](https://media.giphy.com/media/4HviEwdwBY4tR37gAJ/giphy.gif)
+[Demo](https://media.giphy.com/media/4HviEwdwBY4tR37gAJ/giphy.gif)
