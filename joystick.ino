@@ -24,6 +24,7 @@ enum STATE {
   UNLOCKED
 };
 
+const int UNLOCK_TIME = 5000;
 STATE lockState = LOCKED;
 
 int dir = -1; // STARTING DIRECTION
@@ -47,7 +48,7 @@ void setup() {
  
 void loop() {
   if (lockState == LOCKED) {
-      lock();
+    lock();
   } else {
     unlock();
   }
@@ -89,7 +90,12 @@ void lock() {
 
 void unlock() {
   myservo.write(0);
-  delay(3000);
+  digitalWrite(UP, HIGH);
+  digitalWrite(RIGHT, HIGH);
+  digitalWrite(DOWN, HIGH);
+  digitalWrite(LEFT, HIGH);
+  delay(UNLOCK_TIME);
+  reset();
 }
 
 void checkState(int dir) {
@@ -137,13 +143,16 @@ void checkState(int dir) {
 
   if (lastDir == TERMINATING_DIR) {
     unlock();
-    reset();
   }
 }
 
 void reset() {
   Serial.print("resetting");
   lastDir = -1;
+  digitalWrite(UP, LOW);
+  digitalWrite(RIGHT, LOW);
+  digitalWrite(DOWN, LOW);
+  digitalWrite(LEFT, LOW);
 }
 
 int getDirection(int xValue, int yValue) {
