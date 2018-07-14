@@ -4,4 +4,4 @@ Arduino Lock mechanism that uses a joystick to control the state of the lock (se
 ## How it works
 Input a joystick directional combination to unlock the box, which is locked by a servo. LEDS provide direction feedback
 
-[Demo](https://media.giphy.com/media/4HviEwdwBY4tR37gAJ/giphy.gif)
+[Demo](https://youtu.be/UNIKn8YTs_w)
